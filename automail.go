@@ -78,7 +78,7 @@ func main() {
 }
 
 /*
-./automail -config email.conf
+./automail --config email.conf
 
 cat email.conf
 {
