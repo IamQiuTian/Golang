@@ -77,7 +77,7 @@ func main() {
 	}
 }
 
-\*
+/*
 ./automail -config email.conf
 
 cat email.conf
@@ -93,4 +93,4 @@ cat email.conf
 "Username":"发件邮箱",
 "Password":"邮箱鉴权码"
 }
-*\
+*/
