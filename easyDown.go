@@ -10,8 +10,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/yosssi/go-fileserver"
 )
 
 var (
@@ -37,8 +35,7 @@ func main() {
 		getPublic(*port, filename)
 		getPrivate(*port, filename)
 	}
-	fs := fileserver.New(fileserver.Options{})
-	http.Handle("/", fs.Serve(http.Dir(*directory)))
+    http.Handle("/", http.FileServer(http.Dir(*directory)))
 	if err := http.ListenAndServe(":"+*port, nil); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
