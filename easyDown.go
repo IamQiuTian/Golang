@@ -26,19 +26,19 @@ func main() {
 	}
 	if len(*file) != 0 {
 		filename := filepath.Base(*file)
-		dirpath := filepath.Dir(*file)
-		*directory = dirpath
 		getPublic(*port, filename)
 		getPrivate(*port, filename)
+		http.HandleFunc(fmt.Sprintf("/%s", filename), func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, *file)
+		})
+
 	} else {
 		filename := "false"
 		getPublic(*port, filename)
 		getPrivate(*port, filename)
+		http.Handle("/", http.FileServer(http.Dir(*directory)))
 	}
-    http.Handle("/", http.FileServer(http.Dir(*directory)))
-	if err := http.ListenAndServe(":"+*port, nil); err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
+	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }
 
 func getPublic(port, filename string) {
@@ -56,7 +56,8 @@ func getPublic(port, filename string) {
 		log.Fatal(err)
 	}
 	if filename == "false" {
-		fmt.Printf("Tour address: http://%s:%s\n", strings.Replace(string(b), "\n", "", -1), port)
+
+		fmt.Printf("Tour address: http://%s:%s/\n", strings.Replace(string(b), "\n", "", -1), port)
 	} else {
 		fmt.Printf("Tour address: http://%s:%s/%s\n", strings.Replace(string(b), "\n", "", -1), port, filename)
 	}
@@ -71,7 +72,7 @@ func getPrivate(port, filename string) {
 		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
 				if filename == "false" {
-					fmt.Printf("Tour address: http://%s:%s\n", ipnet.IP.String(), port)
+					fmt.Printf("Tour address: http://%s:%s/\n", ipnet.IP.String(), port)
 				} else {
 					fmt.Printf("Tour address: http://%s:%s/%s\n", ipnet.IP.String(), port, filename)
 				}
@@ -79,11 +80,3 @@ func getPrivate(port, filename string) {
 		}
 	}
 }
-
-/*
-
-# go run easyDown.go -f golang.org/x/net/CONTRIBUTING.md -p 8888
-Tour address: http://123.206.18.135:8888/CONTRIBUTING.md
-Tour address: http://10.141.50.29:8888/CONTRIBUTING.md
-
-*/
