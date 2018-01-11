@@ -83,6 +83,6 @@ func getPrivate(port, filename string) {
 
 /*
  Used:
- $ ./easyDown -f File
- $ ./easyDown -d Directory
+ $ ./easyDown -f File -p 8080
+ $ ./easyDown -d Directory -p 8080
 */
