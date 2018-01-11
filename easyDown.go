@@ -36,7 +36,7 @@ func main() {
 		filename := "false"
 		getPublic(*port, filename)
 		getPrivate(*port, filename)
-		http.Handle("/", http.FileServer(http.Dir(*directory)))
+		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(*directory))))
 	}
 	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }
@@ -80,3 +80,9 @@ func getPrivate(port, filename string) {
 		}
 	}
 }
+
+/*
+ Used:
+ $ ./easyDown -f File
+ $ ./easyDown -d Directory
+*/
