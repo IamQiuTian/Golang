@@ -75,5 +75,5 @@ func UrL(wg *sync.WaitGroup, uL string) {
 	} else {
 		fmt.Printf("%v Connect Success\n", uL)
 	}
-	wg.Done()
+	wg.Done() 
 }
