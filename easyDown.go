@@ -13,27 +13,34 @@ import (
 )
 
 var (
-	directory *string = flag.String("d", "", "Directory path")
-	file      *string = flag.String("f", "", "file path")
+	directory *string = flag.String("d", "false", "Directory path")
+	file      *string = flag.String("f", "false", "file path")
 	port      *string = flag.String("p", "8888", "Listening port")
 )
 
 func main() {
 	flag.Parse()
-	if len(*directory) == 0 && len(*file) == 0 {
+	if *directory == "false" && *file == "false" {
 		flag.Usage()
 		return
 	}
-	if len(*file) != 0 {
+	if *file != "false" {
 		filename := filepath.Base(*file)
 		getPublic(*port, filename)
 		getPrivate(*port, filename)
 		http.HandleFunc(fmt.Sprintf("/%s", filename), func(w http.ResponseWriter, r *http.Request) {
+			fmt.Println()
+			log.Printf(
+				"%s\t%s\t%q\t%s",
+				r.RemoteAddr,
+				r.Method,
+				r.RequestURI,
+			)
 			http.ServeFile(w, r, *file)
 		})
 
 	} else {
-		filename := "false"
+		filename := "nil"
 		getPublic(*port, filename)
 		getPrivate(*port, filename)
 		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(*directory))))
@@ -55,8 +62,7 @@ func getPublic(port, filename string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if filename == "false" {
-
+	if filename == "nil" {
 		fmt.Printf("Tour address: http://%s:%s/\n", strings.Replace(string(b), "\n", "", -1), port)
 	} else {
 		fmt.Printf("Tour address: http://%s:%s/%s\n", strings.Replace(string(b), "\n", "", -1), port, filename)
@@ -71,7 +77,7 @@ func getPrivate(port, filename string) {
 	for _, address := range addrs {
 		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
-				if filename == "false" {
+				if filename == "nil" {
 					fmt.Printf("Tour address: http://%s:%s/\n", ipnet.IP.String(), port)
 				} else {
 					fmt.Printf("Tour address: http://%s:%s/%s\n", ipnet.IP.String(), port, filename)
@@ -83,6 +89,6 @@ func getPrivate(port, filename string) {
 
 /*
  Used:
- $ ./easyDown -f File -p 8080
- $ ./easyDown -d Directory -p 8080
+ $ ./easyDown -f FilePath -p 8080
+ $ ./easyDown -d DirectoryPath -p 8080
 */
