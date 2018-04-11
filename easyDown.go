@@ -18,7 +18,7 @@ var (
 	directory *string = flag.String("d", "false", "Directory path")
 	file      *string = flag.String("f", "false", "file path")
 	port      *string = flag.String("p", "8888", "Listening port")
-)
+) 
 
 func main() {
 	flag.Parse()
