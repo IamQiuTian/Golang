@@ -7,6 +7,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -25,13 +27,18 @@ func main() {
 		return
 	}
 	if *file != "false" {
+		ok, _ := pathExist(*file)
+		if !ok {
+			fmt.Println("File does not exist")
+			return
+		}
 		filename := filepath.Base(*file)
 		getPublic(*port, filename)
 		getPrivate(*port, filename)
+		print("\n")
 		http.HandleFunc(fmt.Sprintf("/%s", filename), func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println()
 			log.Printf(
-				"%s\t%s\t%q\t%s",
+				"%s  %s  %s",
 				r.RemoteAddr,
 				r.Method,
 				r.RequestURI,
@@ -40,12 +47,52 @@ func main() {
 		})
 
 	} else {
+		ok, _ := pathExist(*directory)
+		if !ok {
+			fmt.Println("Directory does not exist")
+			return
+		}
 		filename := "nil"
 		getPublic(*port, filename)
 		getPrivate(*port, filename)
-		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(*directory))))
+		print("\n")
+		http.Handle("/", func(prefix string, h http.Handler) http.Handler {
+			if prefix == "" {
+				return h
+			}
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				log.Printf(
+					"%s  %s  %s",
+					r.RemoteAddr,
+					r.Method,
+					r.RequestURI,
+				)
+				if p := strings.TrimPrefix(r.URL.Path, prefix); len(p) < len(r.URL.Path) {
+					r2 := new(http.Request)
+					*r2 = *r
+					r2.URL = new(url.URL)
+					*r2.URL = *r.URL
+					r2.URL.Path = p
+					h.ServeHTTP(w, r2)
+				} else {
+					http.NotFound(w, r)
+				}
+			})
+
+		}("/", http.FileServer(http.Dir(*directory))))
 	}
 	log.Fatal(http.ListenAndServe(":"+*port, nil))
+}
+
+func pathExist(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
 
 func getPublic(port, filename string) {
@@ -88,7 +135,7 @@ func getPrivate(port, filename string) {
 }
 
 /*
- Used:
- $ ./easyDown -f FilePath -p 8080
- $ ./easyDown -d DirectoryPath -p 8080
+Used:
+$ easyDown -f FilePath -p 8080
+$ easyDown -d DirectoryPath -p 8080
 */
