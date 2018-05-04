@@ -16,8 +16,6 @@ import (
 	"time"
 )
 
-type HttpHandler struct{}
-
 var (
 	directory *string = flag.String("d", "false", "Directory path")
 	file      *string = flag.String("f", "false", "file path")
