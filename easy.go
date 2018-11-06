@@ -38,23 +38,24 @@ var filename string
 func main() {
 	flag.Parse()
 	// 参数为空或参数都不为空
-	if *download == false && *update == false || *download != false && *update != false {
+	switch {
+	case *download == false && *update == false || *download != false && *update != false:
 		flag.Usage()
 		return
-	}
-	if *update == true && *directory == "false" {
+	case *directory == "false" && *file == "false" || *directory != "false" && *file != "false":
 		flag.Usage()
 		return
-	}
-	if *directory == "false" && *file == "false" || *directory != "false" && *file != "false" {
+	case *update == true && *directory == "false":
 		flag.Usage()
 		return
-	}
-
-	if *download {
-		fileDown()
-	} else {
-		updateFile()
+	default:
+		func() {
+			if *download {
+				fileDown()
+			} else {
+				updateFile()
+			}
+		}()
 	}
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", *port), nil))
@@ -119,7 +120,7 @@ func updateFile() {
 	fmt.Printf("Update link: http://%s:%s/\n\n", privateIP, *port)
 }
 
-// 文件上传页面展示
+/// 文件上传页面展示
 func updateIndex(w http.ResponseWriter, r *http.Request) {
 	tpl := `
     <html>
